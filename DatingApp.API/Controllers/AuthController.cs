@@ -1,4 +1,5 @@
-﻿using DatingApp.API.Data;
+﻿using AutoMapper;
+using DatingApp.API.Data;
 using DatingApp.API.Dtos;
 using DatingApp.API.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using AutoMapper;
 
 namespace DatingApp.API.Controllers
 {
@@ -27,7 +27,7 @@ namespace DatingApp.API.Controllers
             _configuration = configuration;
             _mapper = mapper;
         }
-        
+
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserForRegisterDto userForRegisterDto)
         {
@@ -35,13 +35,13 @@ namespace DatingApp.API.Controllers
             if (await _authRepository.UserExists(userForRegisterDto.UserName))
                 return BadRequest("Username already exist");
 
-            var userToCreate = new User
-            {
-                UserName = userForRegisterDto.UserName
-            };
+            var userToCreate = _mapper.Map<User>(userForRegisterDto);
 
             var createdUser = await _authRepository.Register(userToCreate, userForRegisterDto.Password);
-            return StatusCode(201);
+
+            var userToReturn = _mapper.Map<UserForDetailedDto>(createdUser);
+
+            return CreatedAtRoute("GetUser", new { controller = "Users", id = createdUser.Id }, userToReturn);
         }
 
         [HttpPost("login")]
@@ -79,7 +79,7 @@ namespace DatingApp.API.Controllers
             return Ok(new
             {
                 token = tokenHandler.WriteToken(token),
-                user 
+                user
             });
         }
     }

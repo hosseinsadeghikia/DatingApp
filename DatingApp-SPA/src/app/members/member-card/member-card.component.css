@@ -34,3 +34,9 @@
 .animate{
     transition: all 0.3 ease-in-out;
 }
+
+img {
+    max-height: 175px;
+    min-height: 175px;
+}
+
